@@ -267,7 +267,11 @@ export function buildProviderSummary(
       ? credential.windows.find((candidate) => candidate.id === headline.id)
       : undefined;
     const resetAt = window?.resetAtMs ?? null;
-    if (resetAt !== null && resetAt > nowMs && (nextResetAtMs === null || resetAt < nextResetAtMs)) {
+    if (
+      resetAt !== null &&
+      resetAt > nowMs &&
+      (nextResetAtMs === null || resetAt < nextResetAtMs)
+    ) {
       nextResetAtMs = resetAt;
     }
     return { key: credential.key, remainingPercent: window?.remainingPercent ?? null };

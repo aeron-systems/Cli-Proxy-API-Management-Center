@@ -21,10 +21,7 @@ import type { QuotaFileEntry } from '../logic';
 import type { QuotaCardState } from '../providers';
 import type { QuotaProviderType } from '../providers/types';
 import { buildProviderSummary, quotaWindowsFor, type ProviderSummary } from '../summary';
-import {
-  QUOTA_PROGRESS_HIGH_THRESHOLD,
-  QUOTA_PROGRESS_MEDIUM_THRESHOLD,
-} from './QuotaMeter';
+import { QUOTA_PROGRESS_HIGH_THRESHOLD, QUOTA_PROGRESS_MEDIUM_THRESHOLD } from './QuotaMeter';
 import styles from './QuotaSummary.module.scss';
 
 export type QuotaSummaryProps = {

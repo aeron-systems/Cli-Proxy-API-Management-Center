@@ -8,7 +8,7 @@
  * - useHeaderRefresh 单槽位：本页唯一注册者，全局刷新 = 重取文件列表。
  */
 
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { Fragment, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { authFilesApi } from '@/services/api';
 import { Button } from '@/components/ui/Button';
@@ -21,11 +21,16 @@ import { useNow } from '@/hooks/useNow';
 import { useRevealGroup } from '@/hooks/motion';
 import { useAuthStore, useQuotaStore, useThemeStore } from '@/stores';
 import type { AuthFileItem, ResolvedTheme } from '@/types';
-import { getQuotaCacheKey } from '@/utils/quota/identity';
+import { getQuotaCacheKey, getQuotaDisplayName, maskAccountLabel } from '@/utils/quota/identity';
+import { getTypeLabel } from '@/features/authFiles/constants';
 import { ProviderTabs } from '@/features/authFiles/components/ProviderTabs';
 import { QuotaHeader } from './components/QuotaHeader';
 import { QuotaCard } from './components/QuotaCard';
 import { QuotaTimeline } from './components/QuotaTimeline';
+import { QuotaSummary } from './components/QuotaSummary';
+import { PoolsPanel } from './components/PoolsPanel';
+import { usePools } from './hooks/usePools';
+import { resolveCredentialPool } from './pools';
 import {
   CARD_ENTRANCE_BUDGET_MS,
   QUOTA_DEFAULT_SORT_MODE,
@@ -62,6 +67,8 @@ const SKELETON_CARD_COUNT = 6;
  * identity-aware display label. Keep the filename fallback stable for memoization.
  */
 const displayNameFor = (name: string) => name;
+/** Aeron: account names are masked until "Show emails" is on. */
+const maskedDisplayNameFor = (name: string) => maskAccountLabel(name);
 
 export function QuotaPage() {
   const { t } = useTranslation();
@@ -77,6 +84,8 @@ export function QuotaPage() {
   );
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState('');
+  const [showEmails, setShowEmails] = useState(false);
+  const pools = usePools();
   const searchInputRef = useRef<HTMLInputElement>(null);
   // 页头 + tabs 的入场级联（标题 → meta → 动作 → tabs，级差 70ms）
   const revealRef = useRevealGroup<HTMLDivElement>();
@@ -322,6 +331,8 @@ export function QuotaPage() {
         refreshing={loading || batchLoading}
         disableControls={disableControls}
         onRefreshAll={handleRefreshAll}
+        showEmails={showEmails}
+        onToggleEmails={() => setShowEmails((value) => !value)}
       />
 
       <section className={styles.workbench}>
@@ -374,6 +385,15 @@ export function QuotaPage() {
           </div>
         </div>
 
+        {!loading && (
+          <QuotaSummary
+            entries={filterEntriesByTab(entries, tab)}
+            quotaFor={getQuota}
+            resolvedTheme={resolvedTheme}
+            onSelectProvider={(provider) => handleTabChange(provider)}
+          />
+        )}
+
         {error && (
           <div className={styles.errorBanner} role="alert">
             {error}
@@ -415,20 +435,33 @@ export function QuotaPage() {
             }
           />
         ) : (
-          <div className={styles.grid}>
-            {pageItems.map((entry, index) => (
-              <QuotaCard
-                key={`${entry.type}:${getQuotaCacheKey(entry.file)}`}
-                entry={entry}
-                quota={getQuota(entry)}
-                resolvedTheme={resolvedTheme}
-                canRefresh={canUseActions && !entry.file.disabled}
-                resetting={resettingQuotaName === getQuotaCacheKey(entry.file)}
-                entranceDelayMs={cardEntranceDelay(index)}
-                onRefresh={() => void refreshQuota(entry.file, QUOTA_ADAPTERS[entry.type])}
-                onReset={() => resetQuota(entry.file, QUOTA_ADAPTERS[entry.type])}
-              />
-            ))}
+          <div className={styles.list}>
+            {pageItems.map((entry, index) => {
+              const groupStart = index === 0 || pageItems[index - 1].type !== entry.type;
+              const label = getQuotaDisplayName(entry.file);
+              return (
+                <Fragment key={`${entry.type}:${getQuotaCacheKey(entry.file)}`}>
+                  {groupStart && sortMode !== 'soonest' && (
+                    <h2 className={styles.groupHeading}>
+                      {getTypeLabel(t, entry.type)}
+                      <span className={styles.groupCount}>{tabCounts[entry.type] ?? 0}</span>
+                    </h2>
+                  )}
+                  <QuotaCard
+                    entry={entry}
+                    quota={getQuota(entry)}
+                    resolvedTheme={resolvedTheme}
+                    displayName={showEmails ? label : maskAccountLabel(label)}
+                    poolInfo={resolveCredentialPool(entry.file, pools)}
+                    canRefresh={canUseActions && !entry.file.disabled}
+                    resetting={resettingQuotaName === getQuotaCacheKey(entry.file)}
+                    entranceDelayMs={cardEntranceDelay(index)}
+                    onRefresh={() => void refreshQuota(entry.file, QUOTA_ADAPTERS[entry.type])}
+                    onReset={() => resetQuota(entry.file, QUOTA_ADAPTERS[entry.type])}
+                  />
+                </Fragment>
+              );
+            })}
           </div>
         )}
 
@@ -464,9 +497,11 @@ export function QuotaPage() {
         <QuotaTimeline
           entries={pageItems}
           quotaFor={getQuota}
-          displayNameFor={displayNameFor}
+          displayNameFor={showEmails ? displayNameFor : maskedDisplayNameFor}
           resolvedTheme={resolvedTheme}
         />
+
+        {pools && <PoolsPanel pools={pools} showEmails={showEmails} />}
       </section>
     </div>
   );

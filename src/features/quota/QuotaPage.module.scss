@@ -17,7 +17,7 @@
 .workbench {
   display: flex;
   flex-direction: column;
-  gap: 14px;
+  gap: 20px;
   min-width: 0;
 }
 
@@ -192,6 +192,35 @@
   gap: 16px;
   grid-template-columns: repeat(auto-fill, minmax(min(100%, 340px), 1fr));
   align-items: stretch;
+}
+
+/* Aeron: credentials as rows, grouped under a provider heading. */
+
+.list {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.groupHeading {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  margin: 26px 0 0;
+  padding-bottom: 6px;
+  font-size: 17px;
+  font-weight: 650;
+  color: var(--text-primary);
+
+  &:first-child {
+    margin-top: 8px;
+  }
+}
+
+.groupCount {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-tertiary);
 }
 
 /* ---------- 分页 ---------- */

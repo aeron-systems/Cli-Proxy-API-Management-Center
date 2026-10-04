@@ -434,6 +434,8 @@ export function parseRoutingStrategy(raw: unknown): RoutingStrategy {
     return 'weighted-round-robin';
   }
   if (['fill-first', 'fillfirst', 'ff'].includes(normalized)) return 'fill-first';
+  // Aeron proxy fork: spend the credential whose weekly window resets soonest.
+  if (['reset-first', 'resetfirst', 'rf'].includes(normalized)) return 'reset-first';
   return 'round-robin';
 }
 

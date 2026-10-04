@@ -81,7 +81,16 @@
   color: var(--text-secondary);
 }
 
+.identity {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6px;
+  min-width: 0;
+}
+
 .fileName {
+  max-width: 100%;
   min-width: 0;
   font-family: $font-mono;
   font-size: 15px;

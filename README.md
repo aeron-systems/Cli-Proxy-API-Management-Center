@@ -111,6 +111,36 @@ Use `bun run preview` to preview locally. Prefer an HTTP server over opening the
 
 </details>
 
+## Aeron
+
+This is Aeron's fork (`aeron-systems/Cli-Proxy-API-Management-Center`), kept close to
+upstream (`router-for-me/Cli-Proxy-API-Management-Center`, remote `upstream`). What it adds:
+
+- Quota Management is the landing page and the theme defaults to dark.
+- Quota page: a summary card per provider (each window added up across accounts, one bar
+  segment per account, soonest reset), one row per credential with its windows, and a
+  "Show emails" toggle; account names are masked until it is switched on.
+- Credentials are ordered soonest reset first within each provider ("Reset first" sort),
+  matching the proxy's `reset-first` routing strategy, which the config panel now offers.
+- Pools (Aeron proxy fork): each credential shows "Reserved for <pool>" or "Shared pool",
+  and a Pools table lists every client API key (masked) with its pool and accounts. This
+  only appears when the server returns pool data; upstream servers show nothing.
+
+Build and install (Mac Studio, Bun):
+
+```bash
+bun install --frozen-lockfile
+bun run verify          # tests, lint, typecheck and build
+mkdir -p ~/model-proxy/panel
+cp dist/index.html ~/model-proxy/panel/management.html
+```
+
+The proxy must serve this file and must not replace it with upstream's release. In the
+proxy's `config.yaml` set `remote-management.disable-auto-update-panel: true`, and point the
+proxy at the file with `MANAGEMENT_STATIC_PATH=$HOME/model-proxy/panel/management.html`
+(or place it in the proxy's `static/` directory). Then open
+`http://127.0.0.1:8317/management.html`.
+
 ## Development
 
 ```bash

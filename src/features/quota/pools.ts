@@ -74,7 +74,7 @@ const normalizePool = (name: string, raw: unknown): CredentialPool | null => {
 export function normalizePools(payload: unknown): CredentialPool[] | null {
   const wrapper = asRecord(payload);
   const body = wrapper && 'pools' in wrapper ? wrapper.pools : payload;
-  let pools: (CredentialPool | null)[] = [];
+  let pools: (CredentialPool | null)[];
   if (Array.isArray(body)) {
     pools = body.map((item, index) => normalizePool(`pool-${index + 1}`, item));
   } else {

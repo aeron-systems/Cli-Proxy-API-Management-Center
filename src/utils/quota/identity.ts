@@ -40,7 +40,7 @@ const maskSegment = (value: string, keep: number): string =>
  */
 export function maskAccountLabel(label: string): string {
   return label.replace(/([^\s@·]+)@([^\s@·]+)/g, (_match, local: string, domain: string) => {
-    const keep = Math.min(8, Math.max(1, Math.floor(local.length / 2)));
+    const keep = Math.min(8, Math.max(1, local.length - 3));
     const [head, ...rest] = domain.split('.');
     const maskedDomain = [maskSegment(head, 1), ...rest].join('.');
     return `${maskSegment(local, keep)}@${maskedDomain}`;
