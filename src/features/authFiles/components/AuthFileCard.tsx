@@ -34,6 +34,8 @@ import { resolveAuthFileQuotaType } from '@/features/authFiles/logic';
 import type { AuthFileStatusBarData } from '@/features/authFiles/hooks/useAuthFilesStatusBarCache';
 import { AuthFileQuotaSection } from '@/features/authFiles/components/AuthFileQuotaSection';
 import { AuthFileCooldownSection } from './AuthFileCooldownSection';
+import type { CredentialPoolInfo } from '@/features/quota/pools';
+import { PoolChip } from '@/features/quota/components/PoolChip';
 import styles from './AuthFileCard.module.scss';
 
 export type AuthFileCardProps = {
@@ -50,6 +52,8 @@ export type AuthFileCardProps = {
   statusBarCache: Map<string, AuthFileStatusBarData>;
   /** 首屏一次性级联入场的延迟；null/undefined 表示不做入场动画。 */
   entranceDelayMs?: number | null;
+  /** Aeron pool membership; null hides the chip (server without pools). */
+  poolInfo?: CredentialPoolInfo | null;
   onShowModels: (file: AuthFileItem) => void;
   onDownload: (name: string) => void;
   onManualRefresh: (file: AuthFileItem) => void;
@@ -164,6 +168,8 @@ export function AuthFileCard(props: AuthFileCardProps) {
           <span className={styles.runtimeLabel}>{t('auth_files.type_virtual')}</span>
         )}
       </header>
+
+      {props.poolInfo && <PoolChip info={props.poolInfo} />}
 
       {identity.secondary && (
         <p className={styles.fileName} title={identity.fullName}>

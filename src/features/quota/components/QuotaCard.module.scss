@@ -7,25 +7,31 @@
  * ============================================================ */
 
 .card {
+  /* Aeron: one credential per row: name | windows | actions. */
   position: relative;
-  display: flex;
-  flex-direction: column;
-  gap: 11px;
-  padding: 15px 16px;
-  border-radius: 14px;
-  border: 1px solid var(--border-color);
-  background: color-mix(in srgb, var(--bg-primary) 82%, transparent);
-  transition:
-    transform var(--dur-hover, 200ms) var(--ease-out-strong, ease-out),
-    border-color var(--dur-hover, 200ms) var(--ease-out-strong, ease-out),
-    box-shadow var(--dur-hover, 200ms) var(--ease-out-strong, ease-out);
+  display: grid;
+  grid-template-columns: minmax(180px, 300px) minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 14px 32px;
+  padding: 22px 4px;
+  border-bottom: 1px solid var(--border-color);
+  transition: background-color var(--dur-hover, 200ms) var(--ease-out-strong, ease-out);
 }
 
 @media (hover: hover) and (pointer: fine) {
   .card:hover {
-    transform: translateY(-2px);
-    border-color: var(--border-hover);
-    box-shadow: 0 12px 26px -14px rgb(0 0 0 / 0.16);
+    background: color-mix(in srgb, var(--bg-tertiary) 25%, transparent);
+  }
+}
+
+@media (max-width: 1100px) {
+  .card {
+    grid-template-columns: minmax(0, 1fr) auto;
+  }
+
+  .body {
+    grid-column: 1 / -1;
+    grid-row: 2;
   }
 }
 
@@ -75,10 +81,19 @@
   color: var(--text-secondary);
 }
 
+.identity {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6px;
+  min-width: 0;
+}
+
 .fileName {
+  max-width: 100%;
   min-width: 0;
   font-family: $font-mono;
-  font-size: 12.5px;
+  font-size: 15px;
   font-weight: 600;
   letter-spacing: 0.01em;
   color: var(--text-primary);
@@ -88,10 +103,17 @@
 /* ---------- body 容器 ---------- */
 
 .body {
-  display: flex;
-  flex-direction: column;
-  gap: 9px;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 220px), 1fr));
+  align-items: start;
+  gap: 16px 36px;
   min-width: 0;
+
+  > .idleBody,
+  > .skeleton,
+  > .errorStrip {
+    grid-column: 1 / -1;
+  }
 }
 
 /* ---------- idle：整块 body 即点击加载的落点 ---------- */
@@ -103,8 +125,8 @@
   justify-content: center;
   gap: 6px;
   width: 100%;
-  min-height: 76px;
-  padding: 12px 10px;
+  min-height: 52px;
+  padding: 10px;
   cursor: pointer;
   border: 1px dashed var(--border-color);
   border-radius: 10px;
@@ -230,25 +252,25 @@
 
 .actionRow {
   display: flex;
-  justify-content: flex-end;
-  gap: 6px;
-  flex-wrap: wrap;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 4px;
 }
 
-/* 安静描边药丸（与凭证卡图标动作同族：hover 才显色块） */
+/* Quiet text action ("Refresh quota"); the colour lifts on hover. */
 .actionPill {
   display: inline-flex;
   align-items: center;
-  gap: 5px;
+  gap: 6px;
   cursor: pointer;
-  border: 1px solid var(--border-color);
+  border: 1px solid transparent;
   border-radius: $radius-full;
   background: none;
-  padding: 5px 11px;
-  font-size: 11.5px;
-  font-weight: 600;
+  padding: 6px 12px;
+  font-size: 13.5px;
+  font-weight: 500;
   line-height: 1.4;
-  color: var(--text-secondary);
+  color: var(--text-tertiary);
   white-space: nowrap;
   transition:
     transform var(--dur-press, 160ms) var(--ease-out-strong, ease-out),

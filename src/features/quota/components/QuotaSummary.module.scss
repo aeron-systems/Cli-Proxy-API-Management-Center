@@ -1,0 +1,224 @@
+@use '../../../styles/mixins' as *;
+
+/* Provider summary row: one bordered strip split into equal cells. */
+
+.row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 240px), 1fr));
+  border: 1px solid var(--border-color);
+  border-radius: 16px;
+  overflow: hidden;
+  background: color-mix(in srgb, var(--bg-primary) 70%, transparent);
+}
+
+.card {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 10px;
+  min-width: 0;
+  padding: 20px 22px;
+  border: 0;
+  border-right: 1px solid var(--border-color);
+  background: none;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition: background-color var(--dur-hover, 200ms) var(--ease-out-strong, ease-out);
+
+  &:last-child {
+    border-right: 0;
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--primary-color);
+    outline-offset: -2px;
+  }
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .card:hover {
+    background: color-mix(in srgb, var(--bg-tertiary) 45%, transparent);
+  }
+}
+
+.head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.iconWrap {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 7px;
+}
+
+.icon {
+  width: 18px;
+  height: 18px;
+  object-fit: contain;
+  display: block;
+}
+
+.iconFallback {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text-secondary);
+}
+
+.name {
+  font-size: 16px;
+  font-weight: 650;
+  color: var(--text-primary);
+  @include text-ellipsis;
+}
+
+.count {
+  margin-left: auto;
+  font-size: 13px;
+  color: var(--text-tertiary);
+  white-space: nowrap;
+}
+
+.windowLabel {
+  margin-top: 4px;
+  font-size: 14px;
+  color: var(--text-secondary);
+  @include text-ellipsis;
+}
+
+.total {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+}
+
+.totalValue {
+  font-size: 32px;
+  line-height: 1.1;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
+  color: var(--text-primary);
+}
+
+.totalOf {
+  margin-left: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-tertiary);
+}
+
+.segments {
+  display: flex;
+  gap: 4px;
+  margin-top: 2px;
+}
+
+.segment {
+  flex: 1 1 0;
+  height: 5px;
+  border-radius: $radius-full;
+  background: color-mix(in srgb, var(--text-primary) 10%, transparent);
+  overflow: hidden;
+}
+
+.segmentFill {
+  display: block;
+  height: 100%;
+  border-radius: $radius-full;
+  transition: width 360ms var(--ease-out-strong, ease);
+}
+
+.segmentHigh {
+  background: var(--viz-success);
+}
+
+.segmentMedium {
+  background: var(--quota-medium-color);
+}
+
+.segmentLow {
+  background: var(--viz-failure);
+}
+
+.segmentEmpty {
+  background: transparent;
+}
+
+.reset {
+  display: flex;
+  align-items: baseline;
+  gap: 0;
+  font-size: 14px;
+  font-variant-numeric: tabular-nums;
+  color: var(--text-tertiary);
+}
+
+.resetRelative {
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+.resetRelative + .resetAbsolute::before {
+  content: '·';
+  margin: 0 6px;
+  color: var(--text-quaternary);
+}
+
+.others {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-top: 6px;
+  padding-top: 12px;
+  border-top: 1px solid var(--border-color);
+}
+
+.otherLine {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  font-size: 13.5px;
+}
+
+.otherLabel {
+  color: var(--text-tertiary);
+  @include text-ellipsis;
+}
+
+.otherValue {
+  font-weight: 650;
+  font-variant-numeric: tabular-nums;
+  color: var(--text-primary);
+  white-space: nowrap;
+
+  .totalOf {
+    font-size: 12.5px;
+  }
+}
+
+@include mobile {
+  .card {
+    border-right: 0;
+    border-bottom: 1px solid var(--border-color);
+
+    &:last-child {
+      border-bottom: 0;
+    }
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .card,
+  .segmentFill {
+    transition: none;
+  }
+}

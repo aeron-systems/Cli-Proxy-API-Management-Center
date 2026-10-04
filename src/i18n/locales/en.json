@@ -214,7 +214,8 @@
     "ws_auth_enable": "Require auth for /ws/*",
     "routing_strategy_round_robin": "round-robin (cycle)",
     "routing_strategy_weighted_round_robin": "weighted-round-robin (weighted cycle)",
-    "routing_strategy_fill_first": "fill-first (prioritize)"
+    "routing_strategy_fill_first": "fill-first (prioritize)",
+    "routing_strategy_reset_first": "reset-first (soonest reset)"
   },
   "auth_files": {
     "title": "Auth Files Management",
@@ -1396,7 +1397,8 @@
           "disable_cooling_desc": "Globally disable auth/model cooldown windows after failures",
           "session_affinity": "Session Affinity Routing",
           "ws_auth": "WebSocket Authentication",
-          "ws_auth_desc": "Require authentication for AI Studio WebSocket connections (oauth.providers.aistudio.ws-auth)"
+          "ws_auth_desc": "Require authentication for AI Studio WebSocket connections (oauth.providers.aistudio.ws-auth)",
+          "strategy_reset_first": "reset-first (soonest weekly reset)"
         },
         "quota": {
           "title": "Quota Fallback",
@@ -1583,7 +1585,25 @@
     "weekday_wed": "Wed",
     "weekday_thu": "Thu",
     "weekday_fri": "Fri",
-    "weekday_sat": "Sat"
+    "weekday_sat": "Sat",
+    "show_emails": "Show emails",
+    "hide_emails": "Hide emails",
+    "sort_reset_first": "Reset first (per provider)",
+    "summary_credentials_one": "{{count}} credential",
+    "summary_credentials_other": "{{count}} credentials",
+    "summary_of": "of {{total}}",
+    "summary_not_loaded": "Not loaded yet",
+    "summary_loaded": "{{loaded}} of {{total}} loaded",
+    "summary_show_provider": "Show {{provider}} credentials",
+    "summary_weekly_limit": "Weekly limit",
+    "summary_monthly_limit": "Monthly limit",
+    "pool_reserved_for": "Reserved for {{pool}}",
+    "pool_shared": "Shared pool",
+    "pools_title": "Pools",
+    "pools_col_pool": "Pool",
+    "pools_col_keys": "API keys",
+    "pools_col_accounts": "Accounts",
+    "pools_none": "None"
   },
   "plugin_management": {
     "title": "Plugin Management",

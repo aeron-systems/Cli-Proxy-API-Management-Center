@@ -22,6 +22,8 @@ import {
 import { bindQuotaClasses } from '../types';
 import { QUOTA_ADAPTERS, type QuotaCardState } from '../providers';
 import { isQuotaRefreshDisabled, type QuotaFileEntry } from '../logic';
+import type { CredentialPoolInfo } from '../pools';
+import { PoolChip } from './PoolChip';
 import { useClaudeResetGrants } from '../providers/claude/ClaudeResetGrants';
 import bodyStyles from './QuotaBody.module.scss';
 import styles from './QuotaCard.module.scss';
@@ -33,6 +35,10 @@ export type QuotaCardProps = {
   entry: QuotaFileEntry;
   quota?: QuotaCardState;
   resolvedTheme: ResolvedTheme;
+  /** Label override, e.g. with the account part masked. */
+  displayName?: string;
+  /** Aeron pool membership; null hides the chip (server without pools). */
+  poolInfo?: CredentialPoolInfo | null;
   canRefresh: boolean;
   resetting: boolean;
   /** 首屏级联入场延迟；null = 不入场（切 tab / 翻页 / 刷新新挂载的卡片）。 */
@@ -46,6 +52,8 @@ export function QuotaCard(props: QuotaCardProps) {
     entry,
     quota,
     resolvedTheme,
+    displayName: displayNameOverride,
+    poolInfo = null,
     canRefresh,
     resetting,
     entranceDelayMs,
@@ -55,7 +63,7 @@ export function QuotaCard(props: QuotaCardProps) {
   const { t } = useTranslation();
   const adapter = QUOTA_ADAPTERS[entry.type];
   const file = entry.file;
-  const displayName = getQuotaDisplayName(file);
+  const displayName = displayNameOverride ?? getQuotaDisplayName(file);
 
   // 挂载时捕获一次延迟：后续 props 变 null 不影响本卡（React 19 禁渲染期读 ref）
   const [mountEntranceDelayMs] = useState<number | null>(entranceDelayMs ?? null);
@@ -107,8 +115,11 @@ export function QuotaCard(props: QuotaCardProps) {
             <span className={styles.iconFallback}>{typeLabel.slice(0, 1).toUpperCase()}</span>
           )}
         </span>
-        <span className={styles.fileName} title={displayName}>
-          {displayName}
+        <span className={styles.identity}>
+          <span className={styles.fileName} title={displayName}>
+            {displayName}
+          </span>
+          <PoolChip info={poolInfo} />
         </span>
       </header>
 

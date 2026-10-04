@@ -598,7 +598,7 @@ export function MainLayout() {
       labelKey: 'nav_groups.operate',
       items: [
         {
-          path: '/',
+          path: '/dashboard',
           labelKey: 'nav.dashboard',
           metaKey: 'nav_meta.dashboard',
           icon: sidebarIcons.dashboard,
@@ -703,7 +703,7 @@ export function MainLayout() {
   const getRouteOrder = (pathname: string) => {
     const trimmedPath =
       pathname.length > 1 && pathname.endsWith('/') ? pathname.slice(0, -1) : pathname;
-    const normalizedPath = trimmedPath === '/dashboard' ? '/' : trimmedPath;
+    const normalizedPath = trimmedPath === '/' ? '/quota' : trimmedPath;
 
     const authFilesIndex = navOrder.indexOf('/auth-files');
     if (authFilesIndex !== -1) {
@@ -727,7 +727,7 @@ export function MainLayout() {
     const normalize = (pathname: string) => {
       const trimmed =
         pathname.length > 1 && pathname.endsWith('/') ? pathname.slice(0, -1) : pathname;
-      return trimmed === '/dashboard' ? '/' : trimmed;
+      return trimmed === '/' ? '/quota' : trimmed;
     };
 
     const from = normalize(fromPathname);
