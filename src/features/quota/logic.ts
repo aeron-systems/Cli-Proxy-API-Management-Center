@@ -80,6 +80,10 @@ export function filterEntriesBySearch(entries: QuotaFileEntry[], search: string)
 /**
  * Order the grid by whichever credential recovers first.
  *
+ * `soonest` ranks across all providers; `reset_first` ranks within each
+ * provider group, mirroring the proxy's reset-first routing (the credential
+ * whose window resets soonest is spent first, so its quota is not wasted).
+ *
  * The instant is injected rather than read here: quota lives in the store and
  * arrives asynchronously, and keeping this function store-free is what makes
  * the ordering rules directly testable.
@@ -98,12 +102,18 @@ export function sortQuotaEntries(
   mode: QuotaSortMode,
   resolveNextRecoveryMs: (entry: QuotaFileEntry) => number | null
 ): QuotaFileEntry[] {
-  if (mode !== 'soonest') return [...entries];
+  if (mode === 'default') return [...entries];
+
+  // reset_first keeps the provider grouping and orders within each group.
+  const groupOf = (entry: QuotaFileEntry) =>
+    mode === 'reset_first' ? QUOTA_TAB_ORDER.indexOf(entry.type) : 0;
 
   // Decorate once — resolving pokes at provider-shaped state per entry.
   return entries
     .map((entry, index) => ({ entry, index, atMs: resolveNextRecoveryMs(entry) }))
     .sort((a, b) => {
+      const group = groupOf(a.entry) - groupOf(b.entry);
+      if (group !== 0) return group;
       if (a.atMs === null && b.atMs === null) return a.index - b.index;
       if (a.atMs === null) return 1;
       if (b.atMs === null) return -1;

@@ -20,7 +20,7 @@
 
 .title {
   margin: 0;
-  font-size: clamp(26px, 3.2vw, 30px);
+  font-size: clamp(30px, 3.6vw, 40px);
   line-height: 1.15;
   font-weight: 700;
   letter-spacing: -0.02em;
@@ -77,8 +77,44 @@
 .actions {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 10px;
   flex-shrink: 0;
+}
+
+/* Quiet outlined pill beside the primary action (Show emails). */
+.secondaryAction {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  cursor: pointer;
+  border: 1px solid var(--border-color);
+  border-radius: $radius-full;
+  background: none;
+  padding: 9px 18px;
+  font-size: 13.5px;
+  font-weight: 600;
+  line-height: 1;
+  color: var(--text-secondary);
+  transition:
+    border-color var(--dur-hover, 200ms) var(--ease-out-strong, ease-out),
+    color var(--dur-hover, 200ms) var(--ease-out-strong, ease-out);
+
+  &[aria-pressed='true'] {
+    color: var(--text-primary);
+    border-color: var(--border-hover);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--primary-color);
+    outline-offset: 2px;
+  }
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .secondaryAction:hover {
+    border-color: var(--border-hover);
+    color: var(--text-primary);
+  }
 }
 
 /* 墨色药丸主按钮（深色主题自动反相） */

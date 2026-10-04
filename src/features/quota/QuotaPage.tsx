@@ -28,6 +28,7 @@ import { QuotaCard } from './components/QuotaCard';
 import { QuotaTimeline } from './components/QuotaTimeline';
 import {
   CARD_ENTRANCE_BUDGET_MS,
+  QUOTA_DEFAULT_SORT_MODE,
   QUOTA_PAGE_SIZE,
   QUOTA_SORT_MODES,
   QUOTA_TAB_ORDER,
@@ -72,7 +73,7 @@ export function QuotaPage() {
   const [error, setError] = useState('');
   const [tab, setTab] = useState<QuotaTabId>(() => readQuotaUiState()?.tab ?? 'all');
   const [sortMode, setSortMode] = useState<QuotaSortMode>(
-    () => readQuotaUiState()?.sortMode ?? 'default'
+    () => readQuotaUiState()?.sortMode ?? QUOTA_DEFAULT_SORT_MODE
   );
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState('');
