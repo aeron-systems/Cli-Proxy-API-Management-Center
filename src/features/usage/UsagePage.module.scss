@@ -189,6 +189,10 @@
   list-style: none;
 }
 
+.legendItem {
+  list-style: none;
+}
+
 .legendRow {
   display: grid;
   grid-template-columns: 12px minmax(0, 1fr) auto 64px;
@@ -267,6 +271,65 @@
   border-radius: 2px;
 }
 
+/* groups (Moon): a toggle in the name, children indented under it */
+
+.groupToggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  font-weight: inherit;
+  cursor: pointer;
+}
+
+.chevron {
+  flex: none;
+  color: var(--text-secondary);
+  transform: rotate(-90deg);
+  transition: transform var(--dur-hover) var(--ease-out-strong);
+
+  &[data-open] {
+    transform: rotate(0deg);
+  }
+}
+
+.subList {
+  margin: 0 0 6px;
+  padding: 0 10px 0 34px;
+  list-style: none;
+}
+
+.subRow {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto auto 64px;
+  align-items: center;
+  column-gap: 12px;
+  padding: 5px 0;
+  border-top: 1px solid var(--border-color);
+  font-size: 13px;
+
+  &:first-child {
+    border-top: 0;
+  }
+}
+
+.subName {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--text-primary);
+}
+
+.subOf {
+  font-size: 12px;
+  color: var(--text-secondary);
+  font-variant-numeric: tabular-nums;
+}
+
 /* ---------- table ---------- */
 
 .table {
@@ -293,6 +356,16 @@
 
   tbody tr:last-child td {
     border-bottom: 0;
+  }
+
+  tr[data-group] td {
+    background: var(--bg-tertiary);
+    font-weight: 600;
+  }
+
+  tr[data-child] td:first-child {
+    padding-left: 44px;
+    color: var(--text-secondary);
   }
 }
 

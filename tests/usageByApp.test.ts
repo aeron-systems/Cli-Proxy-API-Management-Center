@@ -10,9 +10,10 @@ import {
   type ClientUsageRow,
 } from '@/features/usage/model';
 
-const row = (name: string, totalTokens: number, requests = 1): ClientUsageRow => ({
+const row = (name: string, totalTokens: number, requests = 1, group = ''): ClientUsageRow => ({
   name,
   pool: 'shared',
+  group,
   requests,
   failed: 0,
   inputTokens: 0,
@@ -64,6 +65,38 @@ describe('buildSlices', () => {
     expect(other.members.map((m) => m.name)).toEqual(['a7', 'a8']);
     expect(other.value).toBe(93 + 50);
     expect(slices.reduce((sum, s) => sum + s.share, 0)).toBeCloseTo(1, 10);
+  });
+});
+
+describe('groups', () => {
+  test('a group is one slice summing its apps, with the apps as children', () => {
+    const slices = buildSlices(
+      [row('pratham', 100, 1, 'moon'), row('aryan', 300, 2, 'moon'), row('runway', 250), row('chaksx', 50)],
+      'tokens',
+      'Other'
+    );
+    expect(slices.map((s) => [s.name, s.value])).toEqual([
+      ['Moon', 400],
+      ['runway', 250],
+      ['chaksx', 50],
+    ]);
+    expect(slices[0].children.map((c) => c.name)).toEqual(['aryan', 'pratham']);
+    expect(slices[0].share).toBeCloseTo(400 / 700, 10);
+    expect(slices[1].children).toEqual([]);
+  });
+
+  test('a group counts as one entry when folding into Other', () => {
+    const apps = Array.from({ length: 7 }, (_, i) => row(`a${i}`, 1000 - i));
+    const slices = buildSlices([...apps, row('u1', 3, 1, 'moon'), row('u2', 2, 1, 'moon')], 'tokens', 'Other');
+    // 7 apps + 1 Moon entry = 8 entries: all named, no Other.
+    expect(slices).toHaveLength(8);
+    expect(slices.every((s) => s.slot !== null)).toBe(true);
+    expect(slices[7].name).toBe('Moon');
+  });
+
+  test('group names from the server are lower-cased', () => {
+    const out = normalizeClientUsage({ clients: [{ name: 'a', group: 'Moon', total_tokens: 1 }] });
+    expect(out.clients[0].group).toBe('moon');
   });
 });
 

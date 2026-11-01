@@ -13,6 +13,8 @@ export const MAX_NAMED_SLICES = 7;
 export interface ClientUsageRow {
   name: string;
   pool: string;
+  /** Heading the proxy files this app under (for example "moon"), or "". */
+  group: string;
   requests: number;
   failed: number;
   inputTokens: number;
@@ -24,8 +26,19 @@ export interface ClientUsageRow {
 
 export interface ClientUsageSummary {
   window: string;
-  total: Omit<ClientUsageRow, 'name' | 'pool'>;
+  total: Counts;
   clients: ClientUsageRow[];
+}
+
+type Counts = Omit<ClientUsageRow, 'name' | 'pool' | 'group'>;
+
+/**
+ * One entry of the pie: a single app, or a whole group (Moon) with its apps as
+ * children. A group's numbers are the sum of its children.
+ */
+export interface UsageEntry extends ClientUsageRow {
+  key: string;
+  children: ClientUsageRow[];
 }
 
 export interface UsageSlice {
@@ -36,8 +49,10 @@ export interface UsageSlice {
   share: number;
   /** 1-based palette slot, or null for the grey "Other" slice. */
   slot: number | null;
-  /** The apps folded into an "Other" slice (empty for a named slice). */
-  members: ClientUsageRow[];
+  /** The apps (or groups) folded into an "Other" slice (empty for a named slice). */
+  members: UsageEntry[];
+  /** The apps inside a group slice such as Moon, biggest first (empty otherwise). */
+  children: ClientUsageRow[];
 }
 
 const num = (value: unknown): number => {
@@ -50,7 +65,7 @@ const str = (value: unknown): string => (typeof value === 'string' ? value.trim(
 const isRecord = (value: unknown): value is Record<string, unknown> =>
   typeof value === 'object' && value !== null && !Array.isArray(value);
 
-function normalizeCounts(raw: Record<string, unknown>): Omit<ClientUsageRow, 'name' | 'pool'> {
+function normalizeCounts(raw: Record<string, unknown>): Counts {
   return {
     requests: num(raw.requests),
     failed: num(raw.failed),
@@ -70,7 +85,12 @@ export function normalizeClientUsage(raw: unknown): ClientUsageSummary {
       if (!isRecord(item)) continue;
       const name = str(item.name);
       if (!name) continue;
-      clients.push({ name, pool: str(item.pool), ...normalizeCounts(item) });
+      clients.push({
+        name,
+        pool: str(item.pool),
+        group: str(item.group).toLowerCase(),
+        ...normalizeCounts(item),
+      });
     }
   }
   return {
@@ -84,33 +104,85 @@ export function metricValue(row: Pick<ClientUsageRow, 'requests' | 'totalTokens'
   return metric === 'tokens' ? row.totalTokens : row.requests;
 }
 
+export const groupLabel = (group: string): string => group.charAt(0).toUpperCase() + group.slice(1);
+
+function sumCounts(rows: Counts[]): Counts {
+  const total: Counts = {
+    requests: 0,
+    failed: 0,
+    inputTokens: 0,
+    outputTokens: 0,
+    cacheReadTokens: 0,
+    cacheCreationTokens: 0,
+    totalTokens: 0,
+  };
+  for (const row of rows) {
+    total.requests += row.requests;
+    total.failed += row.failed;
+    total.inputTokens += row.inputTokens;
+    total.outputTokens += row.outputTokens;
+    total.cacheReadTokens += row.cacheReadTokens;
+    total.cacheCreationTokens += row.cacheCreationTokens;
+    total.totalTokens += row.totalTokens;
+  }
+  return total;
+}
+
+const byMetric = (metric: UsageMetric) => (a: ClientUsageRow, b: ClientUsageRow) =>
+  metricValue(b, metric) - metricValue(a, metric) || a.name.localeCompare(b.name);
+
+/** Apps with a group are folded into one entry per group; the rest stand alone. */
+export function buildEntries(clients: ClientUsageRow[], metric: UsageMetric): UsageEntry[] {
+  const entries: UsageEntry[] = [];
+  const groups = new Map<string, ClientUsageRow[]>();
+  for (const row of clients) {
+    if (!row.group) {
+      entries.push({ ...row, key: row.name, children: [] });
+      continue;
+    }
+    const members = groups.get(row.group);
+    if (members) members.push(row);
+    else groups.set(row.group, [row]);
+  }
+  for (const [group, rows] of groups) {
+    entries.push({
+      key: `group:${group}`,
+      name: groupLabel(group),
+      pool: '',
+      group,
+      ...sumCounts(rows),
+      children: [...rows].sort(byMetric(metric)),
+    });
+  }
+  return entries.sort(byMetric(metric));
+}
+
 /**
- * The pie: the biggest apps get their own slice, in palette order (largest
+ * The pie: the biggest entries get their own slice, in palette order (largest
  * first); everything past the seventh folds into one grey "Other" slice.
- * Apps with nothing for this metric are left out.
+ * Entries with nothing for this metric are left out.
  */
 export function buildSlices(
   clients: ClientUsageRow[],
   metric: UsageMetric,
   otherLabel: string
 ): UsageSlice[] {
-  const rows = clients
-    .filter((row) => metricValue(row, metric) > 0)
-    .sort((a, b) => metricValue(b, metric) - metricValue(a, metric) || a.name.localeCompare(b.name));
+  const rows = buildEntries(clients, metric).filter((row) => metricValue(row, metric) > 0);
   const total = rows.reduce((sum, row) => sum + metricValue(row, metric), 0);
   if (total <= 0) return [];
 
-  // An "Other" slice of one app would just be that app, so only fold from 9 up.
+  // An "Other" slice of one entry would just be that entry, so only fold from 9 up.
   const named = rows.length > MAX_NAMED_SLICES + 1 ? rows.slice(0, MAX_NAMED_SLICES) : rows;
   const rest = rows.slice(named.length);
 
   const slices: UsageSlice[] = named.map((row, index) => ({
-    key: row.name,
+    key: row.key,
     name: row.name,
     value: metricValue(row, metric),
     share: metricValue(row, metric) / total,
     slot: index + 1,
     members: [],
+    children: row.children,
   }));
   if (rest.length > 0) {
     const value = rest.reduce((sum, row) => sum + metricValue(row, metric), 0);
@@ -121,6 +193,7 @@ export function buildSlices(
       share: value / total,
       slot: null,
       members: rest,
+      children: [],
     });
   }
   return slices;

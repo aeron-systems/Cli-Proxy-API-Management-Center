@@ -2276,6 +2276,9 @@
     "col_output": "输出令牌",
     "col_cache": "缓存令牌",
     "col_tokens": "总令牌",
-    "col_share": "占比"
+    "col_share": "占比",
+    "group_count_one": "{{count}} 位用户",
+    "group_count_other": "{{count}} 位用户",
+    "of_group": "占{{group}}的 {{share}}"
   }
 }

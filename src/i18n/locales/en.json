@@ -2279,6 +2279,9 @@
     "col_output": "Output tokens",
     "col_cache": "Cache tokens",
     "col_tokens": "Total tokens",
-    "col_share": "Share"
+    "col_share": "Share",
+    "group_count_one": "{{count}} user",
+    "group_count_other": "{{count}} users",
+    "of_group": "{{share}} of {{group}}"
   }
 }

@@ -6,23 +6,27 @@
  * version that added /observability/usage/clients was started; there is no
  * history before that.
  */
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { Fragment, useCallback, useEffect, useMemo, useState, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { clientUsageApi } from '@/services/api/clientUsage';
 import { EmptyState } from '@/components/ui/EmptyState';
+import { IconChevronDown } from '@/components/ui/icons';
 import { Skeleton } from '@/components/ui/Skeleton';
 import { useHeaderRefresh } from '@/hooks/useHeaderRefresh';
 import { useAuthStore } from '@/stores';
 import { DonutChart, sliceColor } from './DonutChart';
 import {
   USAGE_WINDOWS,
+  buildEntries,
   buildSlices,
   formatCompact,
   formatFull,
   formatShare,
   metricValue,
   normalizeClientUsage,
+  type ClientUsageRow,
   type ClientUsageSummary,
+  type UsageEntry,
   type UsageMetric,
   type UsageWindow,
 } from './model';
@@ -38,6 +42,15 @@ export function UsagePage() {
   const [summary, setSummary] = useState<ClientUsageSummary | null>(null);
   const [error, setError] = useState(false);
   const [activeKey, setActiveKey] = useState<string | null>(null);
+  // Groups (Moon) start open so every user is visible; this holds the ones the viewer closed.
+  const [collapsed, setCollapsed] = useState<Set<string>>(new Set());
+  const toggleGroup = useCallback((key: string) => {
+    setCollapsed((prev) => {
+      const next = new Set(prev);
+      if (!next.delete(key)) next.add(key);
+      return next;
+    });
+  }, []);
 
   const load = useCallback(async () => {
     try {
@@ -61,6 +74,10 @@ export function UsagePage() {
   const slices = useMemo(
     () => (summary ? buildSlices(summary.clients, metric, otherLabel) : []),
     [summary, metric, otherLabel]
+  );
+  const entries = useMemo(
+    () => (summary ? buildEntries(summary.clients, metric) : []),
+    [summary, metric]
   );
   const total = summary ? metricValue(summary.total, metric) : 0;
   const active = slices.find((slice) => slice.key === activeKey) ?? null;
@@ -128,34 +145,78 @@ export function UsagePage() {
               ariaLabel={t('usage_by_app.chart_label')}
             />
             <ol className={styles.legend}>
-              {slices.map((slice) => (
-                <li
-                  key={slice.key}
-                  className={styles.legendRow}
-                  data-active={activeKey === slice.key || undefined}
-                  data-dimmed={(activeKey !== null && activeKey !== slice.key) || undefined}
-                  onMouseEnter={() => setActiveKey(slice.key)}
-                  onMouseLeave={() => setActiveKey(null)}
-                >
-                  <span className={styles.swatch} style={{ background: sliceColor(slice) }} />
-                  <span className={styles.legendName}>
-                    {slice.name}
-                    {slice.members.length > 0 && (
-                      <span className={styles.legendMeta}>
-                        {t('usage_by_app.other_count', { count: slice.members.length })}
+              {slices.map((slice) => {
+                const open = slice.children.length > 0 && !collapsed.has(slice.key);
+                return (
+                  <li key={slice.key} className={styles.legendItem}>
+                    <div
+                      className={styles.legendRow}
+                      data-active={activeKey === slice.key || undefined}
+                      data-dimmed={(activeKey !== null && activeKey !== slice.key) || undefined}
+                      onMouseEnter={() => setActiveKey(slice.key)}
+                      onMouseLeave={() => setActiveKey(null)}
+                    >
+                      <span className={styles.swatch} style={{ background: sliceColor(slice) }} />
+                      <span className={styles.legendName}>
+                        {slice.children.length > 0 ? (
+                          <button
+                            type="button"
+                            className={styles.groupToggle}
+                            aria-expanded={open}
+                            onClick={() => toggleGroup(slice.key)}
+                          >
+                            <IconChevronDown size={14} className={styles.chevron} data-open={open || undefined} />
+                            {slice.name}
+                            <span className={styles.legendMeta}>
+                              {t('usage_by_app.group_count', { count: slice.children.length })}
+                            </span>
+                          </button>
+                        ) : (
+                          slice.name
+                        )}
+                        {slice.members.length > 0 && (
+                          <span className={styles.legendMeta}>
+                            {t('usage_by_app.other_count', { count: slice.members.length })}
+                          </span>
+                        )}
                       </span>
+                      <span className={styles.legendValue}>{formatCompact(slice.value)}</span>
+                      <span className={styles.legendShare}>{formatShare(slice.share)}</span>
+                      <span className={styles.legendBar}>
+                        <span
+                          className={styles.legendBarFill}
+                          style={{
+                            width: `${Math.max(slice.share * 100, 0.5)}%`,
+                            background: sliceColor(slice),
+                          }}
+                        />
+                      </span>
+                    </div>
+                    {open && (
+                      <ul className={styles.subList}>
+                        {slice.children
+                          .filter((child) => metricValue(child, metric) > 0)
+                          .map((child) => {
+                            const value = metricValue(child, metric);
+                            return (
+                              <li key={child.name} className={styles.subRow}>
+                                <span className={styles.subName}>{child.name}</span>
+                                <span className={styles.legendValue}>{formatCompact(value)}</span>
+                                <span className={styles.subOf}>
+                                  {t('usage_by_app.of_group', {
+                                    share: formatShare(value / slice.value),
+                                    group: slice.name,
+                                  })}
+                                </span>
+                                <span className={styles.legendShare}>{formatShare(value / total)}</span>
+                              </li>
+                            );
+                          })}
+                      </ul>
                     )}
-                  </span>
-                  <span className={styles.legendValue}>{formatCompact(slice.value)}</span>
-                  <span className={styles.legendShare}>{formatShare(slice.share)}</span>
-                  <span className={styles.legendBar}>
-                    <span
-                      className={styles.legendBarFill}
-                      style={{ width: `${Math.max(slice.share * 100, 0.5)}%`, background: sliceColor(slice) }}
-                    />
-                  </span>
-                </li>
-              ))}
+                  </li>
+                );
+              })}
             </ol>
           </section>
 
@@ -175,23 +236,51 @@ export function UsagePage() {
                 </tr>
               </thead>
               <tbody>
-                {[...(summary?.clients ?? [])]
-                  .sort((a, b) => metricValue(b, metric) - metricValue(a, metric))
-                  .map((row) => (
-                    <tr key={row.name}>
-                      <td className={styles.appName}>{row.name}</td>
-                      <td>{row.pool || '-'}</td>
-                      <td className={styles.num}>{formatFull(row.requests)}</td>
-                      <td className={styles.num}>{row.failed ? formatFull(row.failed) : '-'}</td>
-                      <td className={styles.num}>{formatFull(row.inputTokens)}</td>
-                      <td className={styles.num}>{formatFull(row.outputTokens)}</td>
-                      <td className={styles.num}>{formatFull(row.cacheReadTokens + row.cacheCreationTokens)}</td>
-                      <td className={styles.num}>{formatFull(row.totalTokens)}</td>
-                      <td className={styles.num}>
-                        {formatShare(total > 0 ? metricValue(row, metric) / total : 0)}
-                      </td>
-                    </tr>
-                  ))}
+                {entries.map((entry) => {
+                  const isGroup = entry.children.length > 0;
+                  const open = isGroup && !collapsed.has(entry.key);
+                  return (
+                    <Fragment key={entry.key}>
+                      <UsageTableRow
+                        row={entry}
+                        total={total}
+                        metric={metric}
+                        pool={isGroup ? '' : entry.pool}
+                        label={
+                          isGroup ? (
+                            <button
+                              type="button"
+                              className={styles.groupToggle}
+                              aria-expanded={open}
+                              onClick={() => toggleGroup(entry.key)}
+                            >
+                              <IconChevronDown size={14} className={styles.chevron} data-open={open || undefined} />
+                              {entry.name}
+                              <span className={styles.legendMeta}>
+                                {t('usage_by_app.group_count', { count: entry.children.length })}
+                              </span>
+                            </button>
+                          ) : (
+                            entry.name
+                          )
+                        }
+                        isGroup={isGroup}
+                      />
+                      {open &&
+                        entry.children.map((child) => (
+                          <UsageTableRow
+                            key={`${entry.key}/${child.name}`}
+                            row={child}
+                            total={total}
+                            metric={metric}
+                            pool={child.pool}
+                            label={child.name}
+                            isChild
+                          />
+                        ))}
+                    </Fragment>
+                  );
+                })}
               </tbody>
             </table>
           </section>
@@ -223,5 +312,31 @@ function Segmented<T extends string>({ label, value, options, onChange }: Segmen
         </button>
       ))}
     </div>
+  );
+}
+
+type UsageTableRowProps = {
+  row: ClientUsageRow | UsageEntry;
+  total: number;
+  metric: UsageMetric;
+  pool: string;
+  label: ReactNode;
+  isGroup?: boolean;
+  isChild?: boolean;
+};
+
+function UsageTableRow({ row, total, metric, pool, label, isGroup, isChild }: UsageTableRowProps) {
+  return (
+    <tr data-group={isGroup || undefined} data-child={isChild || undefined}>
+      <td className={styles.appName}>{label}</td>
+      <td>{pool || '-'}</td>
+      <td className={styles.num}>{formatFull(row.requests)}</td>
+      <td className={styles.num}>{row.failed ? formatFull(row.failed) : '-'}</td>
+      <td className={styles.num}>{formatFull(row.inputTokens)}</td>
+      <td className={styles.num}>{formatFull(row.outputTokens)}</td>
+      <td className={styles.num}>{formatFull(row.cacheReadTokens + row.cacheCreationTokens)}</td>
+      <td className={styles.num}>{formatFull(row.totalTokens)}</td>
+      <td className={styles.num}>{formatShare(total > 0 ? metricValue(row, metric) / total : 0)}</td>
+    </tr>
   );
 }
