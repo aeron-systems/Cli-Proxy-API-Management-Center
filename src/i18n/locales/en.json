@@ -107,7 +107,8 @@
     "plugin_store": "Plugin Store",
     "config_management": "Config Panel",
     "logs": "Logs Viewer",
-    "system_info": "Management Center Info"
+    "system_info": "Management Center Info",
+    "usage_by_app": "Usage by app"
   },
   "nav_groups": {
     "operate": "Operate",
@@ -127,7 +128,8 @@
     "plugin_store": "Discover & install plugins",
     "logs": "Request tracing",
     "config_management": "Gateway configuration",
-    "system_info": "Runtime & diagnostics"
+    "system_info": "Runtime & diagnostics",
+    "usage_by_app": "Share of traffic per app"
   },
   "dashboard": {
     "hero_verdict_good": "All systems steady",
@@ -2245,5 +2247,38 @@
     "unavailable": "Resets are currently unavailable.",
     "rate_limited": "Request rate limited.",
     "auth_error": "Authorization was refused."
+  },
+  "usage_by_app": {
+    "title": "Usage by app",
+    "subtitle": "Which apps are using the proxy, as a share of the total. Counted by the proxy itself, per client key.",
+    "metric": "Measure",
+    "metric_tokens": "Tokens",
+    "metric_requests": "Requests",
+    "window": "Period",
+    "window_1h": "1 hour",
+    "window_24h": "24 hours",
+    "window_7d": "7 days",
+    "window_30d": "30 days",
+    "window_all": "All",
+    "total": "Total",
+    "unit_tokens": "tokens",
+    "unit_requests": "requests",
+    "other": "Other",
+    "other_count_one": "{{count}} app",
+    "other_count_other": "{{count}} apps",
+    "chart_label": "Pie chart of usage share by app",
+    "empty_title": "No traffic in this period",
+    "empty_hint": "Counting started when the proxy was last updated; nothing earlier is recorded.",
+    "error_title": "Could not load usage",
+    "error_hint": "This proxy may not have the per-app usage endpoint yet.",
+    "col_app": "App",
+    "col_pool": "Pool",
+    "col_requests": "Requests",
+    "col_failed": "Failed",
+    "col_input": "Input tokens",
+    "col_output": "Output tokens",
+    "col_cache": "Cache tokens",
+    "col_tokens": "Total tokens",
+    "col_share": "Share"
   }
 }
