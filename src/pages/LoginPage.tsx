@@ -106,6 +106,7 @@ export function LoginPage() {
   const [autoLoading, setAutoLoading] = useState(true);
   const [autoLoginSuccess, setAutoLoginSuccess] = useState(false);
   const [error, setError] = useState('');
+  const [auth0Enabled, setAuth0Enabled] = useState(false);
 
   const detectedBase = useMemo(() => detectApiBaseFromLocation(), []);
   const languageOptions = useMemo(
@@ -129,6 +130,20 @@ export function LoginPage() {
   useEffect(() => {
     const init = async () => {
       try {
+        // Returning from Auth0: the proxy hands back a session token used in place of the key.
+        const ssoToken = new URLSearchParams(location.search).get('sso');
+        if (ssoToken) {
+          navigate('/login', { replace: true, state: location.state });
+          try {
+            await login({ apiBase: detectedBase, managementKey: ssoToken, rememberPassword: true });
+            showNotification(t('common.connected_status'), 'success');
+            navigate('/', { replace: true });
+            return;
+          } catch (err: unknown) {
+            setError(getLocalizedErrorMessage(err, t));
+          }
+        }
+
         const autoLoggedIn = await restoreSession();
         if (autoLoggedIn) {
           setAutoLoginSuccess(true);
@@ -151,6 +166,23 @@ export function LoginPage() {
     init();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  useEffect(() => {
+    let cancelled = false;
+    fetch(`${detectedBase}/v0/management/auth0/status`)
+      .then((res) => (res.ok ? res.json() : null))
+      .then((body: { enabled?: boolean } | null) => {
+        if (!cancelled) setAuth0Enabled(Boolean(body?.enabled));
+      })
+      .catch(() => {});
+    return () => {
+      cancelled = true;
+    };
+  }, [detectedBase]);
+
+  const handleAuth0 = useCallback(() => {
+    window.location.assign(`${detectedBase}/v0/management/auth0/login`);
+  }, [detectedBase]);
 
   const handleSubmit = useCallback(async () => {
     if (!managementKey.trim()) {
@@ -250,6 +282,15 @@ export function LoginPage() {
                 </div>
                 <div className={styles.subtitle}>{t('login.subtitle')}</div>
               </div>
+
+              {auth0Enabled && (
+                <>
+                  <Button fullWidth onClick={handleAuth0}>
+                    {t('login.auth0_button')}
+                  </Button>
+                  <div className={styles.hint}>{t('login.auth0_or_key')}</div>
+                </>
+              )}
 
               <div className={styles.connectionBox}>
                 <div className={styles.label}>{t('login.connection_current')}</div>

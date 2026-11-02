@@ -87,7 +87,9 @@
     "error_legacy_backend": "This backend accepts v0 Management API but does not provide v8. Upgrade CLIProxyAPI to v8 or later to use this management page.",
     "error_server": "Backend failed while handling the management request, check the server logs",
     "error_cors": "Cross-origin request blocked, please check server configuration",
-    "error_ssl": "SSL/TLS certificate verification failed"
+    "error_ssl": "SSL/TLS certificate verification failed",
+    "auth0_button": "Sign in with Auth0",
+    "auth0_or_key": "Or use the management key below"
   },
   "header": {
     "refresh_all": "Refresh All",
