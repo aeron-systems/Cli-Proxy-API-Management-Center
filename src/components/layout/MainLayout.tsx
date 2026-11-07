@@ -655,6 +655,12 @@ export function MainLayout() {
           icon: sidebarIcons.usage,
         },
         {
+          path: '/cost',
+          labelKey: 'nav.cost',
+          metaKey: 'nav_meta.cost',
+          icon: sidebarIcons.usage,
+        },
+        {
           path: '/logs',
           labelKey: 'nav.logs',
           metaKey: 'nav_meta.logs',

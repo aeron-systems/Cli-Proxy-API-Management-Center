@@ -110,6 +110,7 @@
     "config_management": "Config Panel",
     "logs": "Logs Viewer",
     "system_info": "Management Center Info",
+    "cost": "AI cost",
     "usage_by_app": "Usage by app"
   },
   "nav_groups": {
@@ -131,6 +132,7 @@
     "logs": "Request tracing",
     "config_management": "Gateway configuration",
     "system_info": "Runtime & diagnostics",
+    "cost": "Dollars per app and model",
     "usage_by_app": "Share of traffic per app"
   },
   "dashboard": {
@@ -2249,6 +2251,37 @@
     "unavailable": "Resets are currently unavailable.",
     "rate_limited": "Request rate limited.",
     "auth_error": "Authorization was refused."
+  },
+  "cost": {
+    "title": "AI cost",
+    "subtitle": "What each app and model cost through this proxy, from the proxy's own token counts and its price table.",
+    "estimate_notice": "Estimate: traffic on subscription pools is not billed by the token. Those dollars are what it would cost at list price, not what was paid. Only pools named paid or api count as real spend.",
+    "total": "Total",
+    "estimated": "Estimate at list price",
+    "real": "Real spend",
+    "tokens": "Tokens",
+    "requests": "{{count}} requests",
+    "no_price": "No price",
+    "no_price_hint": "This has no price in the table, so it is not counted in the dollars.",
+    "partial_hint": "{{tokens}} tokens have no price and are not in this figure.",
+    "unpriced_notice": "No price for: {{models}}. Their {{tokens}} tokens are not in the dollars. \"unknown\" is traffic counted before models were recorded.",
+    "by_client": "By app",
+    "by_model": "By model",
+    "col_app": "App",
+    "col_model": "Model",
+    "col_pool": "Pool",
+    "col_requests": "Requests",
+    "col_tokens": "Tokens",
+    "col_cost": "Cost",
+    "col_basis": "Basis",
+    "basis_estimate": "Estimate",
+    "basis_real": "Real spend",
+    "basis_mixed": "Mixed",
+    "prices_as_of": "Prices as of {{date}}",
+    "empty_title": "No traffic in this period",
+    "empty_hint": "Dollars are counted per model from this proxy version on; older traffic shows as unknown.",
+    "error_title": "Could not load cost",
+    "error_hint": "This proxy may not have the cost endpoint yet."
   },
   "usage_by_app": {
     "title": "Usage by app",

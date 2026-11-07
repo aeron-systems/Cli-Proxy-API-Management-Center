@@ -7,4 +7,6 @@ import { apiClient } from './client';
 export const clientUsageApi = {
   fetchRaw: (window: string): Promise<unknown> =>
     apiClient.get<unknown>('/observability/usage/clients', { params: { window } }),
+  fetchCostRaw: (window: string): Promise<unknown> =>
+    apiClient.get<unknown>('/observability/usage/cost', { params: { window } }),
 };
