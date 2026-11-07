@@ -110,6 +110,7 @@
     "config_management": "配置面板",
     "logs": "日志查看",
     "system_info": "中心信息",
+    "cost": "AI 成本",
     "usage_by_app": "按应用用量"
   },
   "nav_groups": {
@@ -131,6 +132,7 @@
     "logs": "请求追踪与排查",
     "config_management": "网关基础配置",
     "system_info": "运行与诊断信息",
+    "cost": "各应用和模型的费用",
     "usage_by_app": "各应用流量占比"
   },
   "dashboard": {
@@ -2246,6 +2248,37 @@
     "unavailable": "重置暂不可用。",
     "rate_limited": "请求过于频繁。",
     "auth_error": "授权被拒绝。"
+  },
+  "cost": {
+    "title": "AI 成本",
+    "subtitle": "各应用和模型经此代理产生的费用，依据代理自身的令牌计数和价格表计算。",
+    "estimate_notice": "估算：订阅池的流量不按令牌计费。这些金额是按标价计算的费用，并非实际支付金额。只有名为 paid 或 api 的池才算实际支出。",
+    "total": "合计",
+    "estimated": "按标价估算",
+    "real": "实际支出",
+    "tokens": "令牌",
+    "requests": "{{count}} 次请求",
+    "no_price": "无价格",
+    "no_price_hint": "价格表中没有此项，因此未计入金额。",
+    "partial_hint": "{{tokens}} 个令牌没有价格，未计入此金额。",
+    "unpriced_notice": "以下模型没有价格：{{models}}。其 {{tokens}} 个令牌未计入金额。“unknown” 是开始记录模型之前统计的流量。",
+    "by_client": "按应用",
+    "by_model": "按模型",
+    "col_app": "应用",
+    "col_model": "模型",
+    "col_pool": "池",
+    "col_requests": "请求数",
+    "col_tokens": "令牌",
+    "col_cost": "费用",
+    "col_basis": "依据",
+    "basis_estimate": "估算",
+    "basis_real": "实际支出",
+    "basis_mixed": "混合",
+    "prices_as_of": "价格日期：{{date}}",
+    "empty_title": "此时段没有流量",
+    "empty_hint": "从此代理版本起按模型统计金额；更早的流量显示为 unknown。",
+    "error_title": "无法加载成本",
+    "error_hint": "此代理可能尚无成本接口。"
   },
   "usage_by_app": {
     "title": "按应用用量",

@@ -297,7 +297,7 @@ type SegmentedProps<T extends string> = {
   onChange: (value: T) => void;
 };
 
-function Segmented<T extends string>({ label, value, options, onChange }: SegmentedProps<T>) {
+export function Segmented<T extends string>({ label, value, options, onChange }: SegmentedProps<T>) {
   return (
     <div className={styles.segmented} role="group" aria-label={label}>
       {options.map((option) => (
